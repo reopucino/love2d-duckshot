@@ -1,4 +1,5 @@
 flux = require "lib/flux"
+sfxr = require "lib/sfxr"
 
 function love.load()
     sprites = {}
@@ -29,7 +30,12 @@ function love.load()
     duck = {
         x = 0,
         y = 0,
-        sprite = sprites.duck1
+        sprite = sprites.duck1,
+        size = {
+            radius = 45,
+            offset = 30
+        },
+        killed = false
     }
 
     flux.to(duck, 2, {x =200, y = 120}):ease("quartin"):delay(0.5)
@@ -58,7 +64,10 @@ function love.draw()
     love.graphics.pop()
 
     -- draw duck / target
-    love.graphics.draw(duck.sprite, duck.x, duck.y)
+    if (not duck.killed) then
+        love.graphics.draw(duck.sprite, duck.x, duck.y)
+        love.graphics.circle("line", duck.x + duck.size.offset+  duck.size.radius*.5, duck.y+duck.size.offset+duck.size.radius*.5, duck.size.radius)
+    end
     -- love.graphics.draw(sprites.target, 100, 100)
 
     -- draw normal size all
@@ -72,9 +81,30 @@ end
 function love.mousepressed(x, y, button, istouch, presses)
     if button == 1 then
         print("Left mouse button pressed")
+        if math.sqrt((x - (duck.x + duck.size.offset + duck.size.radius*.5))^2 + (y - (duck.y + duck.size.offset + duck.size.radius*.5))^2) < duck.size.radius and not duck.killed then
+            score = score + 1
+            duck.killed = true
+            -- duck.x = 0
+            -- duck.y = 0
+            -- duck.sprite = sprites.duck1
+            -- flux.to(duck, 2, {x =200, y = 120}):ease("quartin"):delay(0.5)
+        end
     elseif button == 2 then
         print("Right mouse button pressed")
     end
+end
+
+
+-- testing sound play using sfxr
+function love.keypressed(key, rep)
+    if key == "space" then
+        love.event.quit("restart")
+    end
+    -- local sound = sfxr.newSound()
+    -- sound:randomize()
+    -- local sounddata = sound:generateSoundData()
+    -- local source = love.audio.newSource(sounddata)
+    -- source:play()
 end
 
 function caltulate_timer(time)
