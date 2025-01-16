@@ -1,3 +1,5 @@
+flux = require "lib/flux"
+
 function love.load()
     sprites = {}
 
@@ -22,6 +24,16 @@ function love.load()
     score = 0
 
     love.mouse.setVisible(false)
+
+    -- testing position 1 duck
+    duck = {
+        x = 0,
+        y = 0,
+        sprite = sprites.duck1
+    }
+
+    flux.to(duck, 2, {x =200, y = 120}):ease("quartin"):delay(0.5)
+
 end
 
 function love.update(dt)
@@ -33,6 +45,8 @@ function love.update(dt)
         -- love.event.quit("restart")
         love.event.quit()
     end
+
+    flux.update(dt)
 end
 
 function love.draw()
@@ -44,8 +58,8 @@ function love.draw()
     love.graphics.pop()
 
     -- draw duck / target
-    -- love.graphics.draw(sprites.duck1, 100, 100)
-    love.graphics.draw(sprites.target, 100, 100)
+    love.graphics.draw(duck.sprite, duck.x, duck.y)
+    -- love.graphics.draw(sprites.target, 100, 100)
 
     -- draw normal size all
     local x, y = love.mouse.getPosition()
