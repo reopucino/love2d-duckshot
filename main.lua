@@ -38,7 +38,7 @@ function love.load()
         killed = false
     }
 
-    flux.to(duck, 2, {x =200, y = 120}):ease("quartin"):delay(0.5)
+    flux.to(duck, 2, {x =200, y = 120}):ease("quartin"):delay(0.5):oncomplete(duck_complete_tween)
 
 end
 
@@ -105,6 +105,18 @@ function love.keypressed(key, rep)
     -- local sounddata = sound:generateSoundData()
     -- local source = love.audio.newSource(sounddata)
     -- source:play()
+end
+
+function duck_complete_tween()
+    -- duck.x = 0
+    -- duck.y = 0
+    -- duck.sprite = sprites.duck1
+    -- duck.killed = false
+    local rand={
+        x = math.random(0, 800),
+        y = math.random(0, 600),
+    }
+    flux.to(duck, 2, {x =rand.x, y = rand.y}):ease("quartin"):delay(0.5):oncomplete(duck_complete_tween)
 end
 
 function caltulate_timer(time)
