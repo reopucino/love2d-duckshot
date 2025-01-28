@@ -21,7 +21,13 @@ function love.load()
     sprites.duck3 = love.graphics.newImage("assets/img/duck3.png")
     sprites.target = love.graphics.newImage("assets/img/target_outline.png")
 
+    game_font = love.graphics.newFont(30)
+
+    -- set font
+    love.graphics.setFont(game_font)
+
     timer = 180
+    time_spawn = 1
     score = 0
 
     love.mouse.setVisible(false)
@@ -38,6 +44,9 @@ function love.load()
         killed = false
     }
 
+    ducks = {}
+
+    -- testing tween
     flux.to(duck, 2, {x =200, y = 120}):ease("quartin"):delay(0.5):oncomplete(duck_complete_tween)
 
 end
@@ -52,6 +61,12 @@ function love.update(dt)
         love.event.quit()
     end
 
+    time_spawn = time_spawn - dt
+    if(time_spawn < 0) then
+        time_spawn = 1
+        spawn_duck()
+    end
+
     flux.update(dt)
 end
 
@@ -63,6 +78,14 @@ function love.draw()
     love.graphics.draw(sprites.bg, 0, 0)
     love.graphics.pop()
 
+
+    for i, d in ipairs(ducks) do
+        if (not d.killed) then
+            love.graphics.draw(d.sprite, d.x, d.y)
+            love.graphics.circle("line", d.x + d.size.offset+  d.size.radius*.5, d.y+d.size.offset+d.size.radius*.5, d.size.radius)
+        end
+    end
+    
     -- draw duck / target
     if (not duck.killed) then
         love.graphics.draw(duck.sprite, duck.x, duck.y)
@@ -73,8 +96,14 @@ function love.draw()
     -- draw normal size all
     local x, y = love.mouse.getPosition()
     local string_timer = caltulate_timer(timer)
+
+    -- tinting color to black
+    love.graphics.setColor(0,0,0)
     love.graphics.print(string_timer, 10, 10)
     love.graphics.print("Score: "..score, 360, 30)
+
+    -- tinting color to white (back to normal)
+    love.graphics.setColor(1, 1, 1)
     love.graphics.draw(sprites.crosshair, x-36, y-36)
 end
 
@@ -94,7 +123,6 @@ function love.mousepressed(x, y, button, istouch, presses)
     end
 end
 
-
 -- testing sound play using sfxr
 function love.keypressed(key, rep)
     if key == "space" then
@@ -105,6 +133,21 @@ function love.keypressed(key, rep)
     -- local sounddata = sound:generateSoundData()
     -- local source = love.audio.newSource(sounddata)
     -- source:play()
+end
+
+function spawn_duck()
+    local one_duck = {
+        x = math.random(20, love.graphics.getWidth()-20),
+        y = math.random(20, love.graphics.getHeight()-20),
+        sprite = sprites.duck1,
+        size = {
+            radius = 45,
+            offset = 30
+        },
+        killed = false
+    }
+
+    table.insert(ducks, one_duck)
 end
 
 function duck_complete_tween()
