@@ -1,5 +1,6 @@
 flux = require "lib/flux"
 sfxr = require "lib/sfxr"
+anim8 = require "lib/anim8"
 
 function love.load()
     sprites = {}
@@ -21,6 +22,22 @@ function love.load()
     sprites.duck3 = love.graphics.newImage("assets/img/duck3.png")
     sprites.target = love.graphics.newImage("assets/img/target_outline.png")
 
+    -- duck spritesheet
+    sprites.image_duck_animation = love.graphics.newImage('assets/img/spritesheets-duck-hunt-300x300.png')
+    sprites.grid_duck_animation = anim8.newGrid(300, 300, sprites.image_duck_animation:getWidth(), sprites.image_duck_animation:getHeight())
+
+    -- EXAMPLE USE
+    -- anims.duck_fly = anim8.newAnimation(sprites.grid_duck_animation('1-3', 1))
+    -- klo mau ambil range baris maka
+    -- grid_duck_animation('1-3', 1) -- ini berarti getFrames('range', baris || row number)
+    -- sedangkan grid_duck_animation(1, '1-3'), ini berarti getFrames(kolom || columnNumber, 'range')
+    anims = {}
+    anims.duck_fly = anim8.newAnimation(sprites.grid_duck_animation('1-3', 1), 0.1)
+    anims.duck_fly_diagonal = anim8.newAnimation(sprites.grid_duck_animation('1-3', 2), 0.1)
+    anims.duck_shoot = anim8.newAnimation(sprites.grid_duck_animation(1, 3), 0.1)
+    anims.duck_ko = anim8.newAnimation(sprites.grid_duck_animation(2, 3), 0.1)
+    
+    print(anims)
     game_font = love.graphics.newFont(30)
 
     -- set font
@@ -46,9 +63,11 @@ function love.load()
 
     ducks = {}
 
+    entities_duck = {}
+
     -- testing tween
     flux.to(duck, 2, {x =200, y = 120}):ease("quartin"):delay(0.5):oncomplete(duck_complete_tween)
-
+    spawn_duck_animation()
 end
 
 function love.update(dt)
@@ -65,6 +84,10 @@ function love.update(dt)
     if(time_spawn < 0) then
         time_spawn = 1
         spawn_duck()
+    end
+
+    for i, d in ipairs(entities_duck) do
+        d.current_anim:update(dt)
     end
 
     flux.update(dt)
@@ -92,6 +115,11 @@ function love.draw()
         love.graphics.circle("line", duck.x + duck.size.offset+  duck.size.radius*.5, duck.y+duck.size.offset+duck.size.radius*.5, duck.size.radius)
     end
     -- love.graphics.draw(sprites.target, 100, 100)
+
+    -- draw animation duck
+    for i, d in ipairs(entities_duck) do
+        d.current_anim:draw(sprites.image_duck_animation, d.x, d.y)
+    end
 
     -- draw normal size all
     local x, y = love.mouse.getPosition()
@@ -148,6 +176,31 @@ function spawn_duck()
     }
 
     table.insert(ducks, one_duck)
+end
+
+function spawn_duck_animation()
+    local entity = {
+        x = 50,
+        y = 50,
+        size = {
+            radius = 45,
+            offset = 30
+        },
+        table_anims = {
+            fly = anims.duck_fly,
+            fly_diagonal = anims.duck_fly_diagonal,
+            shoot = anims.duck_shoot,
+            ko = anims.duck_ko
+        },
+        killed = false
+    }
+    entity.current_anim = entity.table_anims.fly
+
+    table.insert(entities_duck, entity)
+end
+
+function spawn(obj)
+    pprint(obj)
 end
 
 function duck_complete_tween()
